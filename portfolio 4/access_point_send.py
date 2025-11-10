@@ -1,4 +1,3 @@
-# pico_ap_sender.py
 import network
 import socket
 import time
