@@ -30,13 +30,14 @@ def DataCollection(timer):
 
 
 def BangbangV4():
+    stp.ramp_up(200, "backward", 2000, 1000, 20)
     while True:
         if 3.3*(sensorL.read_u16()/65535) > 2.4 and 3.3*(sensorR.read_u16()/65535) < 2.4: #if left sensor reads higher than 2.7 then its white    
             diff.turn_degrees_back("right", 3)
         elif 3.3*(sensorR.read_u16()/65535) > 2.4 and 3.3*(sensorL.read_u16()/65535) < 2.4: # if right sensor reads higher than 2.7 then its white  
             diff.turn_degrees_back("left", 3)
         else:
-            stp.ramp_up(3, "backward", 2000, 1000, 10)
+            diff.backward(3)
         #print(f"L: {3.3*(sensorL.read_u16()/65535)}")
         #print(f"R: {3.3*(sensorR.read_u16()/65535)}")
 
