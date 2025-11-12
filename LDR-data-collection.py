@@ -5,7 +5,7 @@ import numpy as np
 ls = []
 
 # Read CSV and extract the first column (skipping the header)
-with open('data_log.csv', 'r') as file:
+with open('LDR_data\data_med_cover_uden_lys3.csv', 'r') as file:
     my_reader = csv.reader(file, delimiter=',')
     next(my_reader)  # Skip header
     for row in my_reader:
@@ -15,10 +15,12 @@ with open('data_log.csv', 'r') as file:
 x = np.arange(len(ls))
 y = np.array(ls)
 
+name = "LDR Sensor Data Over Time (with cover u. lys) 3"
 # Plot the data
 plt.plot(x, y)
 plt.xlabel("Sample Index")
 plt.ylabel("LDR Value")
-plt.title("LDR Sensor Data Over Time")
+plt.title(name)
 plt.grid(True)
+plt.savefig(f"{name}.png")
 plt.show()
