@@ -53,7 +53,7 @@ while True:
     #beregn PWM med P-klassen
     left_pwm, right_pwm = controller.beregn_position(sensors)
 
-    # Sæt PWM - vi skal have skrevet
+    # Sæt PWM - vi skal have skrevet koden til det. 
     motor_left.duty_u16(left_pwm)
     motor_right.duty_u16(right_pwm)
 
