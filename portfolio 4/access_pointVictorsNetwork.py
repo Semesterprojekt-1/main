@@ -1,6 +1,10 @@
 import network
 import socket
 import time
+from machine import ADC,Pin
+import math
+
+
 
 SSID = "Victor's Galaxy A52"
 PASSWORD = "ebpm3056"
@@ -30,6 +34,11 @@ server_socket.bind(addr)
 server_socket.listen(1)
 print(f"Server listening on port {PORT}...")
 
+
+# Defining the adc's for x and y
+adcX = ADC(26)
+adcY = ADC(27)
+
 while True:
     try:
         print("Waiting for client to connect...")
@@ -38,10 +47,13 @@ while True:
 
         while True:
             try:
-                message = "1"
-                conn.send(message.encode())
+                valueX = adcX.read_u16()
+                valueY = adcY.read_u16()
+                
+                message =  f"{valueX},{valueY}\n"  #We are trying to send the x- and y values here
+                conn.send((message + "\n").encode())
                 print(f"Sent: {message}")
-                time.sleep(1)
+                time.sleep(0.1)
             except OSError:
                 print(f"Client {client_addr} disconnected")
                 conn.close()
