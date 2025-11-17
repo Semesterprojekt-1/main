@@ -43,15 +43,20 @@ while True:
     s = connect_server()
 
     try:
+        buffer = ""
         while True:
             data = s.recv(1024)
             if not data:
-                print("Server disconnected, reconnecting...")
-                s.close()
+                print("Server disconnected")
                 break
-            print("Received:", data.decode())
-            time.sleep(0.1)
+            buffer += data.decode()
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
+                if line:  # skip empty lines
+                    print("Received:", line)
+
     except OSError as e:
         print("Connection error:", e)
         s.close()
         time.sleep(1)
+
