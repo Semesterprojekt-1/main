@@ -53,38 +53,50 @@ while True:
     s = connect_server()
 
     try:
+        s.settimeout(0)  # non-blocking mode
         buffer = ""
+        lastX = 0
+        lastY = 0
+
         while True:
-            data = s.recv(1024)
-            
-            if not data:
-                print("Server disconnected")
-                break
-            
-            buffer += data.decode()
-            
-            while "\n" in buffer:
-                line, buffer = buffer.split("\n", 1)
-                #if line:  # skip empty lines
-                    #print("Received:", line)
-                    
-                values = line.split(",") # Makes it so we get two values at either side of the comma, as those are the values we need for x and y
-                if len(values) == 2: # Because we only want two values at a time
-                    valueX = int(values[0]) # takes the first value in the list and converts from a string to an integer
-                    valueY = int(values[1]) # takes the second value in the list and converts from a string to an integer
-                    print(valueX,valueY)
-                    
-                    if valueY >= 51000:
-                        diff.forward(4)
-                    elif valueY <= 49000:
-                        diff.backward(4)
-                    elif valueX >= 51000:
-                        diff.turn_in_place_steps("left", 4)
-                    elif valueX <= 49000:
-                        diff.turn_in_place_steps("right", 4)
+            try:
+                data = s.recv(1024)
+
+                if data:  
+                    buffer += data.decode()
+
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+
+                        values = line.split(",")
+                        if len(values) == 2:
+                            try:
+                                lastX = int(values[0])
+                                lastY = int(values[1])
+                                print(lastX, lastY)
+                            except:
+                                pass  # ignore malformed data
+            except OSError:
+                # No data available (normal for non-blocking sockets)
+                pass
+
+            # ——— Movement logic (runs EVERY LOOP, not only on new packets) ———
+            if lastY == 1:
+                diff.forward(4)
+            elif lastY == -1:
+                diff.backward(4)
+            elif lastX == 1:
+                diff.turn_in_place_steps("left", 4)
+            elif lastX == -1:
+                diff.turn_in_place_steps("right", 4)
+            else:
+                # optional: slight idle delay to avoid 100% CPU load
+                time.sleep(0.005)
+
 
     except OSError as e:
         print("Connection error:", e)
         s.close()
         time.sleep(1)
+
 
