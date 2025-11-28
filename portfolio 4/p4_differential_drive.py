@@ -254,3 +254,10 @@ class DifferentialDrive:
         else:
             raise ValueError("Must be right or left")
         self.stop()
+        
+        
+    def set_microsteps (self, microsteps):
+        self.left.set_microsteps(microsteps)
+        self.right.set_microsteps(microsteps)
+            
+
