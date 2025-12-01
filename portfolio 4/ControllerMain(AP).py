@@ -54,6 +54,7 @@ while True:
             try:
                 print(killswitch.value())
                 if killswitch.value() == 0:
+                    conn.send(("0,0\n").encode())
                     break                    
                 valueX = adcX.read_u16()
                 valueY = adcY.read_u16()
@@ -63,7 +64,7 @@ while True:
                     valueX = 2
                 elif valueX >=50000:
                     valueX = 1
-                elif valueX <= 25300:
+                elif valueX <= 26000:
                     valueX = -2
                 elif valueX <= 46000:
                     valueX = -1
@@ -74,7 +75,7 @@ while True:
                     valueY = 2
                 elif valueY >=50000:
                     valueY = 1
-                elif valueY <= 25300:
+                elif valueY <= 26000:
                     valueY = -2
                 elif valueY <= 46000:
                     valueY = -1
