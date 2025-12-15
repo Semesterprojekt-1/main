@@ -1,18 +1,24 @@
 # Import classes
 from differential_drive import DifferentialDrive
 from stepper_motor import StepperMotor
-from machine import ADC, Pin
+from machine import ADC, Pin, UART
 from PController import PController
 import time
+import utime
 import uasyncio as asyncio
 
 # --- Setup pins ---
 pins_right = [0,1,2,3]
 pins_left = [4,5,6,7]
-S0 = Pin(8, Pin.OUT)
-S1 = Pin(9, Pin.OUT)
-S2 = Pin(10, Pin.OUT)
+S0 = Pin(11, Pin.OUT)
+S1 = Pin(12, Pin.OUT)
+S2 = Pin(13, Pin.OUT)
 adc = ADC(26)
+uart = UART(1, baudrate=9600, tx=Pin(8), rx=Pin(9))
+
+# --- Async Event setup ---
+pause_event = asyncio.Event()
+pause_event.set()
 
 # --- Stepper motor setup (HALF step mode) ---
 pwm = 30
@@ -20,18 +26,18 @@ frequency = 18000
 micro_steps = 80
 steps_per_rev = 200
 
-left = StepperMotor(pins_left, "FULL", pwm, frequency, micro_steps, steps_per_rev)
-right = StepperMotor(pins_right, "FULL", pwm, frequency, micro_steps, steps_per_rev)
+left = StepperMotor(pins_left, "HALF", pwm, frequency, micro_steps, steps_per_rev)
+right = StepperMotor(pins_right, "HALF", pwm, frequency, micro_steps, steps_per_rev)
 
 # --- Differential drive ---
 diff = DifferentialDrive(left, right)
 
 # --- P-controller ---
 #weights = [-2, -1, 0, -5, 2, 5, 1]
-weights = [-5, -3, -2, 0, 1, 3, 5]
-Kp = 100
+weights = [-3,-2, 0, 2, 3]
+Kp = 300
 normal_pwm = 30
-normal_speed = 8
+normal_speed = 14
 max_pwm = 40
 max_speed = 24
 
@@ -50,17 +56,17 @@ def read_channel(ch):
     select_channel(ch)
     return adc.read_u16()
 
-
 async def sensor_task():
     global left_speed, right_speed
 
     while True:
+        await pause_event.wait()
         # Read sensors
-        sensors = [read_channel(ch) for ch in range(7)]
-        
+        sensors = [read_channel(ch) for ch in range(5)]
+#         print(sensors)
         
         right_pwm, left_pwm, right_speed, left_speed = controller.beregn_control(sensors)
-        
+#         print(right_pwm, left_pwm, right_speed, left_speed)
     
         await asyncio.sleep_ms(5)
 
@@ -83,6 +89,7 @@ async def move_robot():
     MIN_STEP_RATE = 100
 
     while True:
+        await pause_event.wait()
         now = time.ticks_ms()
 
         # Convert speed (0–24) → step rate (200–1500)
@@ -106,6 +113,26 @@ async def move_robot():
 
         await asyncio.sleep_ms(1)
 
+# ============================================================
+# UART loop
+# ============================================================
+async def UART():
+    while True:
+        if uart.any():  
+            data = uart.read()  
+
+            if data:
+                try:
+                    decoded = data.decode('utf-8')  
+                    print("Received:", decoded)
+                    if decoded == "stop":
+                        pause_event.clear()
+                    if decoded == "start":
+                        pause_event.set()
+                except UnicodeError:
+                    print("Unicode decode error: Invalid UTF-8 data")
+
+        await asyncio.sleep_ms(1)
 
 # ============================================================
 # Main loop
@@ -113,6 +140,7 @@ async def move_robot():
 async def main():
     asyncio.create_task(sensor_task())
     asyncio.create_task(move_robot())
+    asyncio.create_task(UART())
     
     while True:
         await asyncio.sleep(1)
