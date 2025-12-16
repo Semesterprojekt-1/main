@@ -30,7 +30,7 @@ diff = DifferentialDrive(left, right)
 # --- P-controller ---
 #weights = [-2, -1, 0, -5, 2, 5, 1]
 weights = [-11, -5, -3, 0, 2, 5, 11]
-Kp = 45
+Kp = 42
 normal_pwm = 55
 normal_speed = 4
 max_pwm = 55
@@ -81,7 +81,7 @@ def move_robot():
     last_time_left = time.ticks_us()
     last_time_right = time.ticks_us()
 
-    MAX_STEP_RATE = 2100
+    MAX_STEP_RATE = 2200
     MIN_STEP_RATE = 100
 
     while True:
