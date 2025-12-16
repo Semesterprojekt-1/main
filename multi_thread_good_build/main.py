@@ -65,10 +65,6 @@ def sensor_task():
         
         time.sleep_ms(5)
         
-
-# ============================================================
-# Move robot
-# ============================================================
 @micropython.native
 def move_robot():
     global left_speed, right_speed
@@ -106,12 +102,6 @@ def move_robot():
             right_index = (right_index + 1) % len(right_seq)
             last_time_right = now
 
-
-
-
-# ============================================================
-# Main loop
-# ============================================================
 _thread.start_new_thread(sensor_task, ())
 move_robot()   # runs on main core
 
