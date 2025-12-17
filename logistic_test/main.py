@@ -19,6 +19,9 @@ uart = UART(1, baudrate=9600, tx=Pin(8), rx=Pin(9))
 # --- Async Event setup ---
 pause_event = asyncio.Event()
 pause_event.set()
+rcounter = 0
+state = 0
+
 
 # --- Stepper motor setup (HALF step mode) ---
 pwm = 30
@@ -36,9 +39,9 @@ diff = DifferentialDrive(left, right)
 #weights = [-2, -1, 0, -5, 2, 5, 1]
 weights = [-3,-2, 0, 2, 3]
 Kp = 300
-normal_pwm = 30
+normal_pwm = 20
 normal_speed = 14
-max_pwm = 40
+max_pwm = 25
 max_speed = 24
 
 controller = PController(Kp, normal_pwm, normal_speed, max_pwm, max_speed, weights)
@@ -61,9 +64,10 @@ async def sensor_task():
 
     while True:
         await pause_event.wait()
+       
         # Read sensors
         sensors = [read_channel(ch) for ch in range(5)]
-#         print(sensors)
+        
         
         right_pwm, left_pwm, right_speed, left_speed = controller.beregn_control(sensors)
 #         print(right_pwm, left_pwm, right_speed, left_speed)
@@ -117,18 +121,100 @@ async def move_robot():
 # UART loop
 # ============================================================
 async def UART():
+    global rcounter
+    global state
     while True:
         if uart.any():  
-            data = uart.read()  
+            data = uart.read()
 
             if data:
                 try:
                     decoded = data.decode('utf-8')  
                     print("Received:", decoded)
                     if decoded == "stop":
+                        
                         pause_event.clear()
-                    if decoded == "start":
+                        
+                        diff.stop()
+                    elif decoded == "start":
+                        
                         pause_event.set()
+                    else:
+                        if decoded == "r":
+                            rcounter=rcounter+1
+                        print(rcounter)
+                        
+                        if state == 0:
+                            print(state)
+                            if rcounter == 2:
+                                pause_event.clear()
+                                diff.turn_in_place("left", 90)
+                                state+=1
+                                pause_event.set()
+                                print("Hello 2")
+                        if state == 1:
+                            if rcounter == 5:
+                                pause_event.clear()
+                                diff.forward_steps(75)
+                                diff.turn_in_place("left",180)
+                                diff.forward_steps(50)
+                                state+=1
+                                pause_event.set()
+                                print("Hello 5-0")
+                        if state == 2:
+                            print("hi")
+                            if rcounter == 6:
+                                pause_event.clear()
+                                
+                                diff.turn_in_place("right", 20)
+                                diff.forward_steps(180)
+                                state+=1
+                                pause_event.set()
+                        if state ==3:
+                            if rcounter ==7:
+                                print("hi2")
+                                pause_event.clear()
+                                diff.turn_in_place("right", 75)
+                                diff.forward_steps(380)
+                                diff.turn_in_place("left", 180)
+                                diff.forward_steps(250)
+                                state+=1
+                                pause_event.set()
+                        if state == 4:
+                            if rcounter == 8:
+                                pause_event.clear()
+                                diff.forward_steps(100)
+                                diff.turn_in_place("left",180)
+                                diff.forward_steps(100)
+                                state+=1
+                                pause_event.set()
+                        if state==5:
+                            if rcounter ==9:
+                                pause_event.clear()
+                                diff.turn_in_place("right",100)
+                                state+=1
+                                pause_event.set()
+                        if state==6:
+                            if rcounter==10:
+                                pause_event.clear()
+                                diff.turn_in_place("right",70)
+                                state+=1
+                                pause_event.set()
+                        if state ==7:
+                            if rcounter==12:
+                                pause_event.clear()
+                                diff.turn_in_place("right",45)
+                                state+=1
+                                pause_event.set()
+                        if state==8:
+                            if rcounter==15:
+                                pause_event.clear()
+                                diff.turn_in_place("right",45)
+                                pause_event.set()
+                                
+                            
+                                
+                        
                 except UnicodeError:
                     print("Unicode decode error: Invalid UTF-8 data")
 
@@ -142,8 +228,11 @@ async def main():
     asyncio.create_task(move_robot())
     asyncio.create_task(UART())
     
+    diff.stop()
+    
     while True:
         await asyncio.sleep(1)
+        
 
 asyncio.run(main())
 
