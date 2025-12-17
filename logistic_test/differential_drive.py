@@ -28,7 +28,22 @@ class DifferentialDrive:
             self.right.set_step(r_step)
             if mode == "HALF":
                 time.sleep(0.001)
-
+                
+    def forward_steps(self, steps):
+        """
+        Move both stepper motors in the forward direction
+        
+        :param steps (INT): Number of steps to turn
+        
+        """
+        step_seq_len = len(self.left.step_sequence)
+        for _ in range(steps):
+            for i in range(step_seq_len):
+                self.left.set_step(self.left.step_sequence[i])
+                self.right.set_step(self.right.step_sequence[i])
+                time.sleep(0.01)
+        self.stop()
+        
     def backward(self, mode):
         """Perform ONE backward microstep."""
         for l_step, r_step in zip(reversed(self.left.step_sequence), reversed(self.right.step_sequence)):
@@ -36,6 +51,20 @@ class DifferentialDrive:
             self.right.set_step(r_step)
             if mode == "HALF":
                 time.sleep(0.001)
+                
+    def backward_steps(self, steps):
+        """
+        Move both stepper motors in the backward direction
+        
+        :param steps (INT): Number of steps to turn
+        
+        """
+        step_seq_len = len(self.left.step_sequence)
+        for _ in range(steps):
+            for i in range(step_seq_len):
+                self.left.set_step(self.left.step_sequence[-i])
+                self.right.set_step(self.right.step_sequence[-i])
+                time.sleep(0.01)                
                         
     def stop(self):
         """
@@ -129,6 +158,40 @@ class DifferentialDrive:
             
         elif direction == "left":
             self.move_one_stepper(steps, "left")
+        else:
+            raise ValueError("Must be right or left")
+        self.stop()
+    
+    
+    def turn_in_place(self, direction, degrees):
+        """
+        Turns the robot around its axis in a given number of degrees
+        
+        :param direction (STR): The direction we want to turn in.
+        :param degrees (INT): Amount of degrees we want to turn.
+
+        """
+        circumference = math.pi * 25
+        distance = circumference/(360/degrees)
+        steps = self.cm_to_steps(distance)
+        
+        if direction == "right":
+            step_seq_len = len(self.left.step_sequence)
+            for _ in range(steps):
+                for i in range(step_seq_len):
+                    self.left.set_step(self.left.step_sequence[i])
+                    self.right.set_step(self.right.step_sequence[-i])
+                    time.sleep(0.01)
+            self.stop()
+            
+        elif direction == "left":
+            step_seq_len = len(self.left.step_sequence)
+            for _ in range(steps):
+                for i in range(step_seq_len):
+                    self.left.set_step(self.left.step_sequence[-i])
+                    self.right.set_step(self.right.step_sequence[i])
+                    time.sleep(0.01)
+            self.stop()
         else:
             raise ValueError("Must be right or left")
         self.stop()
