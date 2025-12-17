@@ -20,7 +20,7 @@ uart = UART(1, baudrate=9600, tx=Pin(8), rx=Pin(9))
 pause_event = asyncio.Event()
 pause_event.set()
 rcounter = 0
-state = 0
+state = 15
 
 
 # --- Stepper motor setup (HALF step mode) ---
@@ -155,7 +155,7 @@ async def UART():
                         if state == 1:
                             if rcounter == 5:
                                 pause_event.clear()
-                                diff.forward_steps(75)
+                                diff.forward_steps(85)
                                 diff.turn_in_place("left",180)
                                 diff.forward_steps(50)
                                 state+=1
@@ -174,8 +174,8 @@ async def UART():
                             if rcounter ==7:
                                 print("hi2")
                                 pause_event.clear()
-                                diff.turn_in_place("right", 75)
-                                diff.forward_steps(380)
+                                diff.turn_in_place("right", 76)
+                                diff.forward_steps(375)
                                 diff.turn_in_place("left", 180)
                                 diff.forward_steps(250)
                                 state+=1
@@ -211,6 +211,20 @@ async def UART():
                                 pause_event.clear()
                                 diff.turn_in_place("right",45)
                                 pause_event.set()
+                        if state == 15:
+                            if rcounter == 4:
+                                pause_event.clear()
+                                diff.forward_steps(53)
+                                diff.turn_in_place("left",43)
+                                diff.forward_steps(145)
+                                diff.turn_in_place("right",138)
+                                diff.forward_steps(224)
+                                diff.turn_in_place("right",120)
+                                diff.forward_steps(200)
+                                diff.turn_in_place("left",30)
+                                state+=1
+                                pause_event.set()
+                                
                                 
                             
                                 
