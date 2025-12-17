@@ -27,11 +27,12 @@ rCounter=0
 #     base_move(10, "right", 2)
 #     time.sleep(1)
 #     base_move(10, "left", 2)
-base_lock("off")
-magnet.off()
+
 while True:
     rightV = rightADC.read_u16()
     leftV = leftADC.read_u16()
+    base_lock("on")
+    magnet.on()
 #     print("left", leftV)
 #     print("right", rightV)
 #     time.sleep(0.2)
@@ -40,10 +41,12 @@ while True:
     
     
     
-    if rightV < 30000:
+    if rightV < 28000:
         uart.write(str("r"))
         print("r")
         rCounter+=1
         time.sleep(2)
         
                
+
+
