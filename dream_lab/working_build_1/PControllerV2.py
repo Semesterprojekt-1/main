@@ -9,9 +9,6 @@ class PController:
         self.max_hastighed = max_hastighed
     @micropython.native
     def beregn_control(self, sensor_values):
-        # ------------------------------------------------
-        # Weighted position (NO allocations)
-        # ------------------------------------------------
         total = 0
         weighted = 0
         weights = self.weights
@@ -27,9 +24,6 @@ class PController:
         else:
             error = 0
 
-        # ------------------------------------------------
-        # Steering (P only)
-        # ------------------------------------------------
         steering = self.Kp * error
         max_pwm = self.max_pwm
 
@@ -38,9 +32,6 @@ class PController:
         elif steering < -max_pwm:
             steering = -max_pwm
 
-        # ------------------------------------------------
-        # PWM outputs
-        # ------------------------------------------------
         normal_pwm = self.normal_pwm
 
         left_pwm = normal_pwm + steering
@@ -55,9 +46,6 @@ class PController:
         elif right_pwm > max_pwm:
             right_pwm = max_pwm
 
-        # ------------------------------------------------
-        # Speed scaling (no abs())
-        # ------------------------------------------------
         if steering >= 0:
             turn_effect = steering / max_pwm
             left_speed = self.normal_hastighed * (1 - turn_effect)
@@ -67,9 +55,6 @@ class PController:
             left_speed = self.normal_hastighed
             right_speed = self.normal_hastighed * (1 - turn_effect)
 
-        # ------------------------------------------------
-        # Clamp speeds
-        # ------------------------------------------------
         max_speed = self.max_hastighed
 
         if left_speed < 0:
