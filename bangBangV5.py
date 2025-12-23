@@ -26,7 +26,7 @@ right = StepperMotor(pins_right, "HALF", pwm, frequency, micro_steps, steps_per_
 diff = DifferentialDrive(left, right)
 
 # Bang-bang parameters
-THRESHOLD = 50000
+THRESHOLD = 30000
 BASE_SPEED = 10
 TURN_SPEED = 0
 
@@ -59,14 +59,14 @@ async def bangBang():
 #             state = "CENTERED"
         
          # Check left and middle sensor
-        if sensors[2] < THRESHOLD:
+        if sensors[4] < THRESHOLD:
             # Line is on the right - turn right
             left_speed = BASE_SPEED
             right_speed = TURN_SPEED
             state = "TURN RIGHT"
         
         # Check right and middle sensors 
-        elif sensors[4] < THRESHOLD:
+        elif sensors[2] < THRESHOLD:
             # Line is on the left - turn left
             left_speed = TURN_SPEED
             right_speed = BASE_SPEED
