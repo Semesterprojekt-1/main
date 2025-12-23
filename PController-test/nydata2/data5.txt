@@ -1,5 +1,6 @@
 weights = [-5, -3, -3, 0, 3, 3, 5]
 Kp = 20
+Kunne ikke klare banen - disqualified
 average error = 0.0054717
 data = [
     0.41, 0.41, 0.41, 0.38, 0.35, 0.29, 0.22, 0.18, 0.15, 0.13,
