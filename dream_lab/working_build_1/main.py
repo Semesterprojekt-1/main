@@ -103,12 +103,9 @@ def move_robot():
 
     while True:
         now = time.ticks_us()
-
-        # -------------------------------
-        # Ramp factor (0.0 → 1.0)
-        # -------------------------------
         dt = time.ticks_diff(now, start_time)
 
+        # Calculate ramp factor
         if dt < RAMP_TIME_US:
             ramp_factor = dt / RAMP_TIME_US
         else:
