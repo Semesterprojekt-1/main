@@ -145,13 +145,11 @@ async def UART():
                         print(rcounter)
                         
                         if state == 0:
-                            print(state)
                             if rcounter == 2:
                                 pause_event.clear()
                                 diff.turn_in_place("left", 90)
                                 state+=1
                                 pause_event.set()
-                                print("Hello 2")
                         if state == 1:
                             if rcounter == 5:
                                 pause_event.clear()
@@ -160,9 +158,7 @@ async def UART():
                                 diff.forward_steps(50)
                                 state+=1
                                 pause_event.set()
-                                print("Hello 5-0")
                         if state == 2:
-                            print("hi")
                             if rcounter == 6:
                                 pause_event.clear()
                                 
@@ -172,7 +168,6 @@ async def UART():
                                 pause_event.set()
                         if state ==3:
                             if rcounter ==7:
-                                print("hi2")
                                 pause_event.clear()
                                 diff.turn_in_place("right", 76)
                                 diff.forward_steps(375)
