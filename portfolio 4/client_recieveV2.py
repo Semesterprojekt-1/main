@@ -1,59 +1,80 @@
+# pico_client_receiver.py
 import network
 import socket
 import time
 from stepper_motor import StepperMotor
 from differential_drive import DifferentialDrive
-from machine import ADC,Pin
-import math
 
+#Defining the pins and motors
+pins_right = [0,1,2,3]
+pins_left = [4,5,6,7]
 
-# Defining the adc's for x and y
-adcX = ADC(26)
-adcY = ADC(27)
+left = StepperMotor(pins_left, "MICRO", 20, 16000, 32, 200)
+right = StepperMotor(pins_right, "MICRO", 20, 16000, 32, 200)
+diff = DifferentialDrive(left, right)
 
-# Setup Access Point
+# Disable AP interface
 ap = network.WLAN(network.AP_IF)
-ap.config(essid="PICO_LINK", password="12345678", pm=0xa11140)
-ap.active(True)
+ap.active(False)
 
-while not ap.active():
+# Enable STA
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.config(pm=0xa11140)
+wlan.connect("PICO_LINK", "12345678")
+
+# Wait for connection
+for _ in range(20):
+    if wlan.isconnected():
+        break
     time.sleep(0.5)
 
-print("AP active at:", ap.ifconfig())
+print("Connected, IP:", wlan.ifconfig())
 
-# Create TCP server
-addr = socket.getaddrinfo("0.0.0.0", 1234)[0][-1]
-s = socket.socket()
-s.bind(addr)
-s.listen(1)
-print("Waiting for client to connect...")
+# Connect to server
+server_addr = ("192.168.4.1", 1234)
 
 
-# New code attempt
+#New code
+
 while True:
-    try:
-        conn, client_addr = s.accept()
-        print("Client connected from:", client_addr)
+    try:  
+        s = socket.socket() # Needs to be in a while True loop in case client disconnects, so it doesn't just crash
+        s.connect(server_addr) # Same story here
+        print("Connected to server, waiting for data...")
         
-        # Send data continuously
+        buffer = "" # Implement a buffer so we don't send incomplete data to the receiver/robot
+
         while True:
-            try:
-                valueX = adcX.read_u16()
-                valueY = adcY.read_u16()
-                
-                message = f"{valueX},{valueY}\n"  #We are trying to send the x- and y values here
-                conn.send(message.encode())  # Send bytes
-                print("Sent:", message)
-                
-                time.sleep(0.1)  # Lowered the delay from 1 second to 0.1 to send more
-                
-            except:
-                print("Disconnected")
-                conn.close()
+            data = s.recv(1024)  # Receive up to 1024 bytes
+            
+            if not data:
+                print("Connection failed")
                 break
             
-    except KeyboardInterrupt: #So we can close the program efficiently
-        print("Server closed")
-        break
-    
-s.close() #Closes server
+            buffer += data.decode() # Ensures the data accumalates and doesn't overwrite eachother
+            
+            while "\n" in buffer: #Ensures we only continue the loop with complete data. One for x and one for y, so it doesn't crash the robot
+                line, buffer = buffer.split("\n", 1) # line is our data list, and the rest makes it so it only splits the datalist after the first \n
+                
+                values = line.split(",") # Makes it so we get two values at either side of the comma, as those are the values we need for x and y
+                if len(values) == 2: # Because we only want two values at a time
+                    valueX = int(values[0]) # takes the first value in the list and converts from a string to an integer
+                    valueY = int(values[1]) # takes the second value in the list and converts from a string to an integer
+                    
+                    # Control logic
+                    
+                    if valueY >= 51000:
+                        diff.forward(4)
+                    elif valueY <= 49000:
+                        diff.backward(4)
+                    elif valueX >= 51000:
+                        diff.turn_in_place("left", 3)
+                    elif valueX <= 49000:
+                        diff.turn_in_place("right", 3)
+                            
+        s.close()  # Closes server
+        
+    except Exception as e: # Finds any error in the try block and saves them to the variable e
+        print(f"Error: {e}, reconnecting...") # Prints the error found
+        time.sleep(1) # So it doesn't "spam" the server with reconnection attempts
