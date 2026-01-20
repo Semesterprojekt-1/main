@@ -30,7 +30,7 @@ diff = DifferentialDrive(left, right)
 # --- P-controller ---
 #weights = [-2, -1, 0, -5, 2, 5, 1]
 weights = [-11, -5, -3, 0, 2, 5, 11]
-Kp = 55
+Kp = 100
 normal_pwm = 55
 normal_speed = 4
 max_pwm = 55
