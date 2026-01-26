@@ -35,19 +35,19 @@ def read_channel(ch):
     
 # Run
 if __name__ == "__main__":
-    #time.sleep(2)
+    time.sleep(2)
     
     voltageList =[]
     adc = ADC(26)
     timer = Timer()
     timer.init(freq=10,mode=Timer.PERIODIC,callback=DataCollection)
     
-    
-    #diff.turn_in_place("right", 180)
-    time.sleep(5)
-    #diff.turn_in_place("left", 180)
+    diff.turn_in_place("right", 180)
+    time.sleep(2)
+    diff.turn_in_place("left", 180)
     timer.deinit()
-    #SaveData(voltageList)
+    SaveData(voltageList)
     print(voltageList)
     
+
     
