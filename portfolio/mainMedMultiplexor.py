@@ -25,7 +25,7 @@ diff = DifferentialDrive(left, right)
 
 def DataCollection(timer):
     global voltageList
-    volt=3.3*(read_channel(2)/65535)
+    volt=3.3*(adc.read_u16()/65535)
     voltageList.append(volt)
     #print("Voltage: {}V ".format(volt))
     
@@ -59,4 +59,5 @@ if __name__ == "__main__":
     
 
     
+
 
