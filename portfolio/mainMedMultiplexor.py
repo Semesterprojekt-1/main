@@ -10,9 +10,17 @@ S0=Pin(8,Pin.OUT)
 S1=Pin(9,Pin.OUT)
 S2=Pin(10,Pin.OUT)
 
-left = StepperMotor(pins_left, "MICRO", 20, 16000, 80, 200)
-right = StepperMotor(pins_right, "MICRO", 20, 16000, 80, 200)
+# Variables for motors
+pwm = 20
+frekvens = 16000
+microsteps = 80
+steps_per_rev = 200
 
+# Stepper motor instances
+left = StepperMotor(pins_left, "MICRO", pwm, frekvens, microsteps, steps_per_rev)
+right = StepperMotor(pins_right, "MICRO", pwm, frekvens, microsteps, steps_per_rev)
+
+# Differential drive instance
 diff = DifferentialDrive(left, right)
 
 def DataCollection(timer):
@@ -51,3 +59,4 @@ if __name__ == "__main__":
     
 
     
+
